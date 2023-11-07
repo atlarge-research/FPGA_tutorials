@@ -1,2 +1,4 @@
 _x/*
 *.rpt
+proj_*
+*.log
