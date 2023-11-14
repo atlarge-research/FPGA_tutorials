@@ -182,7 +182,7 @@ In particular, under the "Details" section we find additional details for the (o
 
 This is due to the loop pipelining. Indeed, an II of 1, means that  a new loop iteration can start on every clock cycle
 We can derive the total computation time for a pipelined loop as $C = II(N-1) + L$, where $N$ is the number of loop iterations, 1,000 in this case.
-Therefore, in this case the computation time is $C = 1(999) + 2 = 1,01$, which is very close to the expected program latency ($1,002$)
+Therefore, in this case the computation time is $C = 1(999) + 2 = 1,001$, which is very close to the expected program latency ($1,002$)
 
 
 ### Optimizing the loop
