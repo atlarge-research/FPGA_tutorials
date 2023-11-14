@@ -11,8 +11,6 @@ if { $argc != 3 } {
 set flow [lindex $argv 2]
 
 
-
-
 # Create a project
 open_project -reset proj_integer_addition
 
@@ -36,12 +34,7 @@ create_clock -period 200MHz
 # Source x_hls.tcl to determine which steps to execute
 csim_design
 
-puts "$flow"
-
 if {$flow == 1} {
-	# Set any optimization directives
-    #set_directive_inline -off sub_func
-    # End of directives
 
     # Run Synthesis
     csynth_design
