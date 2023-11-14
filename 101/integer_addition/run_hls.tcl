@@ -1,3 +1,18 @@
+# Command line argument parsing
+
+if { $argc != 3 } {
+    puts "################################################"
+    puts "The script requires to indicate the flow to use"
+    puts "Usage: vitis_hls -f [lindex $argv 1] -tclargs <flow: '0' for C simulation only, '1' for C simulation and synthesis>"
+    puts "################################################"
+    exit
+}
+
+set flow [lindex $argv 2]
+
+
+
+
 # Create a project
 open_project -reset proj_integer_addition
 
@@ -7,8 +22,9 @@ add_files integer_addition.cpp
 # Add test bench & files
 add_files -tb integer_addition_test.cpp
 
-# Set the top-level function
+# Set the top-level function (uncomment the proper top function)
 set_top int_add
+#set_top int_add_array
 
 # ########################################################
 # Create a solution
@@ -20,12 +36,25 @@ create_clock -period 200MHz
 # Source x_hls.tcl to determine which steps to execute
 csim_design
 
-# Set any optimization directives
-#set_directive_inline -off sub_func
-# End of directives
+puts "$flow"
 
-# Run Synthesis
-csynth_design
+if {$flow == 1} {
+	# Set any optimization directives
+    #set_directive_inline -off sub_func
+    # End of directives
 
-# Run RTL cosim
-cosim_design
+    # Run Synthesis
+    csynth_design
+
+    # Run RTL cosim
+    ##cosim_design
+} elseif {$flow == 2} {
+
+    # Run Synthesis
+    csynth_design
+
+    # Run RTL cosim
+    cosim_design
+}
+
+exit
