@@ -12,17 +12,17 @@ set flow [lindex $argv 2]
 
 
 # Create a project
-open_project -reset proj_integer_addition
+open_project -reset proj_fp_addition
 
 # Add design files that need to be synthesized
-add_files integer_addition.cpp
+add_files fp_addition.cpp
 
 # Add test bench & files
-add_files -tb integer_addition_test.cpp
+add_files -tb fp_addition_test.cpp
 
 # Set the top-level function (uncomment the proper top function)
-set_top int_add
-#set_top int_add_array
+set_top fp_add
+#set_top fp_add_array
 
 # ########################################################
 # Create a solution
@@ -40,7 +40,6 @@ if {$flow == 1} {
     csynth_design
 
     # Run RTL cosim
-    ##cosim_design
 } elseif {$flow == 2} {
 
     # Run Synthesis

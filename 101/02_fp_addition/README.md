@@ -1,51 +1,51 @@
-This example considers simple operations on integer numbers:
-- addition of two integer numbers
-- sum over an array of integer numbers (accumulation)
+This example considers simple operations on floating point numbers:
+- addition of two floating point numbers 
+- sum over an array of floating point numbers (accumulation)
 
 It includes the following files:
-- `integer_addition.h` and `integer_addition.cpp`, the kernel files containing the declaration and definition of HLS functions respectively
-- `integer_addition_test.cpp`, the testbench, that will be used to check the correctness of our kernels
-- `data.h`, which contains static input data for the testbench.
+- `fp_addition.h` and `fp_addition.cpp`, the kernel files containing the declaration and definition of HLS functions respectively
+- `fp_addition_test.cpp`, the testbench, that will be used to check the correctness of our kernels
+- `data.h`, which contains static input data for the testbench and the definition of the used floating point format (i.e., single or double precision).
 
 
 **Note**: this example is tailored for command-line execution. Similar results and insight can be obtained by using Vitis HLS GUI. The GUI contains also 
 useful tools, such as Scheduler Viewer and Graph Viewer, that do not have an equivalent command line interface.
 
-## Summation of two integer numbers
+## Summation of two floating point numbers
 
-Let's start by considering the summation of two integer numbers. Such kernel is defined in `integer_addition.cpp` as a function with name `int_add`.
+Let's start by considering the summation of two integer numbers. Such kernel is defined in `fp_addition.cpp` as a function with name `fp_add`.
 
 ```C++
-int int_add(int a, int b) {
+FP_TYPE fp_add(FP_TYPE a, FP_TYPE b) {
     // Sum the two numbers
     return a + b;
 }
-```
 
-As you can notice, this simply takes in input two numbers and returns their sum. Let's now evaluate such a function.
+```
+By default the `FP_TYPE` is set to `float`, so each floating point number is represented by 32 bits.
+
 
 ### C Simulation
 
-It is a common practice to evaluate the logical correctness of your HLS function before doing the synthesis. This can be done in Vitis HLS using the testbench and through the C Simulation flow. 
+Similarly to the previous example, we can evaluate the logical correctness of our HLS function through the C Simulation flow. 
 
-In the testbench file (`integer_addition_test.cpp`), we validate the results returned by the HLS function.
+In the testbench file (`float_addition_test.cpp`), we validate the results returned by the HLS function.
 
 ```C++
-void test_int_add_a_b(int a, int b) {
-    // Test simple addition
-    int res = int_add(a, b);
-    printf("Result of %d + %d = %d\n", a, b, res);
-    assert(res == a + b);
-}
+void test_fp_add_a_b(float a, float b) {
+    // Test addition with two floating point numbers
 
+    FP_TYPE res = fp_add(a, b);
+    printf("Result of %.3f + %.3f = %.3f\n", a, b, res);
+
+    assert(fabs(res == a + b) < 1e-6);
+}
 
 int main() {
     // Test two numbers addition
-    test_int_add_a_b(10, 12);
+    test_fp_add_a_b(1.1, 1.2);
 }
 ```
-
-**Note**: in the `main` function leave only the `test_int_add_a_b` function uncommented.
 
 To run the C synthesis, we need to execute the `tcl` script
 
@@ -57,12 +57,14 @@ where the command line argument `0` indicates the flow to execute (0 is for C si
 At this point, the C simulation will be executed and this will print out the correctness check results (note that `vitis_hls` also outputs various logging messages)
 
 ```bash
+INFO: [SIM 211-2] *************** CSIM start ***************
 INFO: [SIM 211-4] CSIM will launch GCC as the compiler.
-   Compiling ../../../../integer_addition_test.cpp in debug mode
-   Compiling ../../../../integer_addition.cpp in debug mode
+   Compiling ../../../../fp_addition_test.cpp in debug mode
+   Compiling ../../../../fp_addition.cpp in debug mode
    Generating csim.exe
-Result of 10 + 12 = 22
+Result of 1.100 + 1.200 = 2.300
 INFO: [SIM 211-1] CSim done with 0 errors.
+INFO: [SIM 211-3] *************** CSIM finish ***************
 ```
 
 More details are in Chapters 12 and 13 of the Vitis HLS guide (v2022.2).
@@ -78,12 +80,12 @@ vitis_hls -f run_hls.tcl -tclargs 1
 
 **Note** in the `run_hls.tcl` script, the proper top function must be selected (line ~24, using the `set_top` command)
 
-This command will generate various files under the `proj_integer_addition/syn` folder. You can inspect the generated `verilog` or `vhdl` code. Given the limited complexity of this example is easy to recognize the relevant parts. Under `report/` you can inspect the `int_add_csynt.rpt` report that contains (among the others):
+This command will generate various files under the `proj_fp_addition/syn` folder. You can inspect the generated `verilog` or `vhdl` code. Given the limited complexity of this example is easy to recognize the relevant parts. Under `report/` you can inspect the `fp_add_csynt.rpt` report that contains (among the others):
 
 - the targeted FPGA device (as defined in the tcl script)
-- the clock timing estimates: in this case, we were targeting a design frequency of 200MHz (5 nsecs), but since this is a very simple program, it is likely that the final design can run at a higher frequency. In this case, it estimates the final clock at 0.880 nsecs (that is 1.13 GHz -- but results can change from synthesis to synthesis). Note that in the report there is also mentioned the clock uncertainty (27% of the target clock by default), which is used by the tool to account for any increases in net delays due to RTL logic synthesis, place, and route (please refer to the manuals if you want to know more).
-- the latency: in some cases, this can be computed statically, and represents the number of clock cycles required for the function to compute all output values. In this case, this is 0 (the result is immediately computed)
-- the resource utilization estimates: include the amount of hardware resources required to implement the design based on the resources available in the FPGA, e.g., look-up tables (LUT), registers, block RAMs, and DSP blocks. In this case, only 39 LUTs are needed to implement this function. 
+- the clock timing estimates: in this case, we were targeting a design frequency of 200MHz (5 nsecs), but since this is a very simple program, it is likely that the final design can run at a higher frequency. In this case, it estimates the final clock at 2.976 nsecs (that is 336 MHz -- but results can change from synthesis to synthesis). Note that this estimate is also reported in standard output and in `vitis_hls.log`, under "Estimated Fmax"
+- the latency: in some cases, this can be computed statically, and represents the number of clock cycles required for the function to compute all output values. In this case, this is 4, as it will takes a few cycles to let the circuit compute the result of the floating point addition.
+- the resource utilization estimates: include the amount of hardware resources required to implement the design based on the resources available in the FPGA, e.g., look-up tables (LUT), registers, block RAMs, and DSP blocks. In this case, we can notice how, among the others, this design requires 2 DSPs to implement the floating point addition. This was not the case of the integer addition of the previous example, since performing integer arithmetics is simpler than doing it in floating point precision.
 
 The report folder contains another synthesis report (`csynth.rpt`), that contains similar information but is arranged in a different way. For example, this can be useful in the case you want to break down resource utilization per function.
 
@@ -94,7 +96,6 @@ More info about synthesis in Chapter 14 of the Vitis HLS user guide (v2022.2).
 ### RTL Co-Simulation
 
 After synthesis, we can run RTL Co-Simulation to verify that the RTL is functionally identical to the C source code. 
-This could be also important to verify that the performance returned by the synthesis match the expectations and to overcome some of the limitations of C simulation (e.g., streams depth, implementation of floating point operations,... -- not relevant in this case but useful in more complicated use cases).
 
 To run the co-simulation with the provided tcl script:
 
@@ -102,19 +103,32 @@ To run the co-simulation with the provided tcl script:
 vitis_hls -f run_hls.tcl -tclargs 2
 ```
 
-This will print in output various information, among the others:
-```bash
-INFO: [COSIM 212-316] Starting C post checking ...
-Result of 10 + 12 = 22
-INFO: [COSIM 212-1000] *** C/RTL co-simulation finished: PASS ***
-INFO: [COSIM 212-210] Design is translated to an combinational logic. II and Latency will be marked as all 0.
+### What if we use double precision?
 
+So far we used single precision numbers (represented with the `float` type). 
+
+What do you think it will change if we switch to double precision (so 64 bits, with `double` type)?
+
+Let's check this by editing the `data.h`, changing the typedef relative to the `FP_TYPE` type:
+
+```C++
+typedef double FP_TYPE;
 ```
 
-## Sum over an array of integer numbers
+While this change has no impact on the functionality of the program, we can notice from the synthesis report that the design is using now more resources.
+In particular 3 DSPs, 462 FlipFlops and 729 LUTs are now required to implement the operation, compared with the 2 DSPs, 210 FlipFlops, and 251 LUTs of the previous case, with a 2 fold (average) increase.
 
-In this use case, given an array of integer numbers (stored in the `data` array defined in `data.h`), we want to return the sum of all its elements. Accumulation is started from a given user value.
-This function is implemented by the `int_add_array` function defined in `integer_addition.cpp`.
+**Note: ** these results, and ratios, can change depending on the used version of the tool, and on complexity of design (the tool can take different decisions).
+
+
+
+## Sum over an array of floating point numbers
+
+In this use case, given an array of floating point numbers (stored in the `data` array defined in `data.h`), we want to return the sum of all its elements. Accumulation is started from a given user value.
+This function is implemented by the `fp_add_array` function defined in `fp_addition.cpp`.
+
+
+TILL HERE. TO BE CONTINUED
 
 ```C++
 int int_add_array(int start) {
