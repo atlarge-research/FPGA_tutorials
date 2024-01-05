@@ -209,7 +209,7 @@ add_loop:
 
 After re-running the synthesis, we can notice from the report that now:
 - the total execution time is ~200 clock cycles. This is because the `add_loop` will now run for 200 iterations, each one computing in parallel over 5 numbers
-- the resource usage is increased, in particular, more BRAM is used, since each BRAM can support at most 2 parallel reads per cycle (Note: The Vivado tools automatically determine if a block RAM is used in Single or True Data port mode, and therefore the actual number of used BRAM depends on internal tool choice). **Note:** in this case the input array is known at compile time, and used in read-only mode. Indeed, can you guess what happen if in the loops you also write something on each array position?
+- the resource usage is increased, in particular, more BRAM is used, since each BRAM can support at most 2 parallel reads per cycle (Note: The Vivado tools automatically determine if a block RAM is used in Single or True Data port mode, and therefore the actual number of used BRAM depends on internal tool choice). 
 
 
 ### RTL Co-Simulation

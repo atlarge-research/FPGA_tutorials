@@ -80,7 +80,7 @@ vitis_hls -f run_hls.tcl -tclargs 1
 
 **Note** in the `run_hls.tcl` script, the proper top function must be selected (line ~24, using the `set_top` command)
 
-This command will generate various files under the `proj_fp_addition/syn` folder. You can inspect the generated `verilog` or `vhdl` code. Given the limited complexity of this example is easy to recognize the relevant parts. Under `report/` you can inspect the `fp_add_csynt.rpt` report that contains (among the others):
+This command will generate various files under the `proj_fp_addition/syn` folder. You can inspect the generated `verilog` or `vhdl` code. We can already notice how the synthesized code is already more complicated than the previous case, with floating point adder components being gnerated. Under `report/` you can inspect the `fp_add_csynt.rpt` report that contains (among the others):
 
 - the targeted FPGA device (as defined in the tcl script)
 - the clock timing estimates: in this case, we were targeting a design frequency of 200MHz (5 nsecs), but since this is a very simple program, it is likely that the final design can run at a higher frequency. In this case, it estimates the final clock at 2.976 nsecs (that is 336 MHz -- but results can change from synthesis to synthesis). Note that this estimate is also reported in standard output and in `vitis_hls.log`, under "Estimated Fmax"
@@ -89,7 +89,7 @@ This command will generate various files under the `proj_fp_addition/syn` folder
 
 The report folder contains another synthesis report (`csynth.rpt`), that contains similar information but is arranged in a different way. For example, this can be useful in the case you want to break down resource utilization per function.
 
-**Note** The synthesis report is an important tool to quickly evaluate the expected performance of your design, and adjust it according to your needs. We will discuss this in the next example.
+**Remember** The synthesis report is an important tool to quickly evaluate the expected performance of your design, and adjust it according to your needs. We will discuss this in the next example.
 
 More info about synthesis in Chapter 14 of the Vitis HLS user guide (v2022.2).
 
@@ -118,28 +118,27 @@ typedef double FP_TYPE;
 While this change has no impact on the functionality of the program, we can notice from the synthesis report that the design is using now more resources.
 In particular 3 DSPs, 462 FlipFlops and 729 LUTs are now required to implement the operation, compared with the 2 DSPs, 210 FlipFlops, and 251 LUTs of the previous case, with a 2 fold (average) increase.
 
-**Note: ** these results, and ratios, can change depending on the used version of the tool, and on complexity of design (the tool can take different decisions).
+**Note:** these results, and ratios, can change depending on the used version of the tool, and on complexity of design (the tool can take different decisions).
 
 
 
 ## Sum over an array of floating point numbers
 
 In this use case, given an array of floating point numbers (stored in the `data` array defined in `data.h`), we want to return the sum of all its elements. Accumulation is started from a given user value.
-This function is implemented by the `fp_add_array` function defined in `fp_addition.cpp`.
+This function is implemented by the `fp_add_array` function defined in `fp_addition.cpp`, and it is similar to the one used for the integer addition.
 
-
-TILL HERE. TO BE CONTINUED
 
 ```C++
-int int_add_array(int start) {
-    // Accumulates the values in the array
-    int result = start;
+FP_TYPE fp_add_array(FP_TYPE start) {
+    FP_TYPE result = start;
 
+    // Accumulate elements in the array
 add_loop:
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < N; i++) {
         result += data[i];
     }
     return result;
+}
 }
 ```
 
@@ -147,11 +146,12 @@ add_loop:
 - inside the main function of the test bench file, we uncomment the appropriate test function (and comment the previous one):
 ```C++
 int main() {
-    // Test array accumulation, starting from 10
-     test_int_add_array(10);
+    //...
+    // Test array addition
+    test_fp_add_array(0);
 }
 ```
-- in the tcl script, add the `int_add_array` function as the only top function (line 27). If you want to retain the results from the previous use case, you can also create a new project (through the `open_project` command), or a new solution (`open_solution`)
+- in the tcl script, add the `float_add_array` function as the only top function (line 27). If you want to retain the results from the previous use case, you can also create a new project (through the `open_project` command), or a new solution (`open_solution`).
 
 ### C Simulation
 
@@ -160,17 +160,15 @@ Similarly to the previous use case, we can run C simulation to double-check the 
 vitis_hls -f run_hls.tcl -tclargs 0
 
 ...
-
 INFO: [SIM 211-2] *************** CSIM start ***************
-INFO: [SIM 211-4] CSIM will launch GCC as the compiler.
-   Compiling ../../../../integer_addition_test.cpp in debug mode
-   Compiling ../../../../integer_addition.cpp in debug mode
-   Generating csim.exe
-Result: 55230
-Expected result: 55230
-INFO: [SIM 211-1] CSim done with 0 errors.
-INFO: [SIM 211-3] *************** CSIM finish ***************
-
+INFO: [SIM 211-4] CSIM will launch GCC as the compiler.                              
+   Compiling ../../../../fp_addition_test.cpp in debug mode
+   Compiling ../../../../fp_addition.cpp in debug mode                                                     
+   Generating csim.exe                                                                                     
+Result: 4277.711                                                                                           
+Expected result: 4277.711                                                                                  
+INFO: [SIM 211-1] CSim done with 0 errors.                                                                 
+INFO: [SIM 211-3] *************** CSIM finish *************** 
 ```
 
 
@@ -182,8 +180,14 @@ We can run the synthesis, look at the generated verilog/vhdl and inspect the rep
 vitis_hls -f run_hls.tcl -tclargs 1
 ```
 
-In the `proj_integer_addition/solution1/syn/report/int_add_array_csynth.rpt` report we notice that:
-- the resulting frequency is lower than before, due to a higher complexity in the design (2.438ns which is ~410 MHz)
+In the `proj_fp_addition/solution1/syn/report/fp_add_array_csynth.rpt` report we notice that the loop is pipelined, but, differently than the integer case, 
+the Initiation Interval is now 4, resulting in a total execution time of 4,002 clock cycles. **Why is this the case?**
+
+This is due to a loop carried dependency, that occurs when a (statement in a) loop iteration depends on (a statement in) a different iteration of the same loop. As reported in the `vitis_hls.log`:
+
+TODO: continue describing the loop carried dependency and how to solve it. --> Accumulation interleaving
+
+- the resulting frequency is lower than before, due to a higher complexity in the design (3.36ns which is ~297 MHz)
 - in this case, the latency to execute the program is 1,002 clock cycles. 
 - in this case, the synthesized program requires 130 LUTs, 45 Flip-Flops, and 1 BRAM. In particular, the BRAM is used to store the input array (Note: in the memory subsection of the report you can note how the compiler has optimized the datatype given that it knows the actual numbers that will be stored)
 
@@ -200,6 +204,8 @@ Therefore, in this case the computation time is $C = 1(999) + 2 = 1,001$, which 
 
 
 ### Optimizing the loop
+
+# TODO: can we do it?
 
 How can we make this loop run faster? We can leverage the spatial parallelism offered by the device (we are using less than 1% of the entire resources!).
 
