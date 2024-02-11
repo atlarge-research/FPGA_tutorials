@@ -2,3 +2,8 @@ _x/*
 *.rpt
 proj_*
 *.log
+.ipcache
+.run
+_x*
+build_dir*
+emconfig*
