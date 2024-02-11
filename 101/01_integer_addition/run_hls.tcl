@@ -28,7 +28,8 @@ set_top int_add
 # Create a solution
 open_solution -reset solution1
 # Define technology and clock rate
-set_part  {xcvu9p-flga2104-2-i}
+#set_part  {xcvu9p-flga2104-2-i}
+set_part {virtexuplusHBM}
 create_clock -period 200MHz
 
 # Source x_hls.tcl to determine which steps to execute
