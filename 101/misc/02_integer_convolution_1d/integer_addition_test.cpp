@@ -12,7 +12,6 @@
 
 #define N 1000
 
-// TODO: CREATE EXAMPLE WITH BRAM CONTENTION (STENCIL 1D)
 
 void test_int_add_array(int in[N]) {
     // Test array accumulation
