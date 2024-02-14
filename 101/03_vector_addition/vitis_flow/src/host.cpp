@@ -108,6 +108,8 @@ int main(int argc, char* argv[]) {
     OCL_CHECK(err, context = cl::Context(device, nullptr, nullptr, nullptr, &err));
     OCL_CHECK(err, q = cl::CommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &err));
     std::cout << "Trying to program device: " << device.getInfo<CL_DEVICE_NAME>() << std::endl;
+
+    // Program the device
     cl::Program program(context, {device}, bins, nullptr, &err);
     if (err != CL_SUCCESS) {
         std::cout << "Failed to program device with xclbin file!\n";

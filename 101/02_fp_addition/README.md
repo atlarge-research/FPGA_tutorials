@@ -1,3 +1,5 @@
+# Floating point operations
+
 This example considers simple operations on floating point numbers:
 - addition of two floating point numbers 
 - sum over an array of floating point numbers (accumulation)

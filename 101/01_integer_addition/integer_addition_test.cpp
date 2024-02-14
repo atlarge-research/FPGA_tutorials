@@ -31,7 +31,7 @@ void test_int_add_array(int start) {
 
 int main() {
     // Test two numbers addition
-    // test_int_add_a_b(10, 12);
+//     test_int_add_a_b(10, 12);
 
     // Test array accumulation, starting from 10
     test_int_add_array(10);

@@ -1,3 +1,5 @@
+# Integer operations
+
 This example considers simple operations on integer numbers:
 - addition of two integer numbers
 - sum over an array of integer numbers (accumulation)

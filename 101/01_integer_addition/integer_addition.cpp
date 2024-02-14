@@ -14,7 +14,6 @@ int int_add_array(int start) {
 
 add_loop:
     for (int i = 0; i < 1000; i++) {
-#pragma HLS unroll factor = 5
         result += data[i];
     }
     return result;

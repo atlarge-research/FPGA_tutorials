@@ -5,8 +5,9 @@ This repository contains a set of examples and mini-applications that showcase F
 The current version targets AMD/Xilinx Vitis HLS and Vitis toolchain.
 
 
-## Contact
+## Contact and contribution
 
-This repository has a didactic purpose.
+Note: This repository has a didactic purpose.
+
 Pull requests, comments, issues are welcome!
 
